@@ -1,0 +1,20 @@
+<div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #740000; color: #ffffff; text-align: center; padding: 20px;">
+      <h1 style="margin: 0; font-size: 24px;">¡Verifica tu cuenta!</h1>
+    </div>
+    <div style="padding: 20px;">
+      <p style="font-size: 16px; color: #333333;">Hola,</p>
+      <p style="font-size: 16px; color: #333333;">Por favor, haz clic en el siguiente enlace para verificar tu cuenta:</p>
+      <div style="text-align: center; margin: 20px 0;">
+        // The "frontendUrl" and "token" variables are passed to the template from the controller
+        <a href="{{frontendUrl}}/auth/verify-email?token={{token}}" style="background-color: #740000; color: #ffffff; padding: 12px 20px; text-decoration: none; font-size: 16px; border-radius: 5px; display: inline-block;">Verificar cuenta</a>
+      </div>
+      <p style="font-size: 14px; color: #666666;">Este enlace expirará en 15 minutos.</p>
+    </div>
+    <div style="background-color: #f4f4f4; text-align: center; padding: 10px; font-size: 12px; color: #aaaaaa;">
+      <p style="margin: 0;">Gracias por confiar en nosotros.</p>
+      <p style="margin: 0;">El equipo de soporte</p>
+    </div>
+  </div>
+</div>
