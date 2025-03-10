@@ -19,32 +19,81 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+# **Sistema de Autenticación con NestJS**
 
-Este proyecto proporciona una estructura básica para crear un sistema de autenticación con NestJS, que incluye:
+Este proyecto proporciona una estructura para crear un sistema de autenticación en una API usando **NestJS**. Incluye funcionalidades como:
+
 - Registro de usuarios.
 - Inicio de sesión con JWT (JSON Web Tokens).
 - Protección de rutas mediante autenticación.
-- Estructura modular y fácil de entender para comenzar a construir una API segura.
+- Módulo NodeMailer para verificación y restablecimiento de contraseñas.
+- Integración con una base de datos SQL (MySQL).
+- Envío de correos electrónicos de verificación y restablecimiento de contraseñas.
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## **Iniciar el Proyecto**
 
-## Compile and run the project
+Antes de comenzar, asegúrate de tener instalado **Node.js**, **npm** y **MySQL**.
 
-```bash
-# development
-$ npm run start
+1. **Instalación de dependencias**:
 
-# watch mode
-$ npm run start:dev
+    ```bash
+    $ npm install
+    ```
 
-# production mode
-$ npm run start:prod
-```
+2. **Configuración del entorno**:
+
+    Crea un archivo `.env` en la raíz del proyecto y agrega las siguientes variables de entorno:
+
+    ```
+    DATABASE_HOST=localhost
+    DATABASE_PORT=3306
+    DATABASE_NAME=yourdatabasename
+    DATABASE_USERNAME=root
+    DATABASE_PASSWORD=yourpassword
+    JWT_SECRET=yoursecretkey
+
+    MAIL_HOST=smtp.gmail.com
+    MAIL_PORT=587
+    MAIL_USER=user
+    MAIL_PASSWORD=yourpassword
+    MAIL_FROM=your-email@example.com
+
+    FRONTEND_URL=https://yoursiteurl.com
+    ```
+
+---
+
+## **Compilar y Correr el Proyecto**
+
+Para iniciar el proyecto, puedes usar los siguientes comandos:
+
+1. **Modo de desarrollo**:
+
+    ```bash
+    $ npm run start:dev
+    ```
+
+2. **Modo de producción**:
+
+    ```bash
+    $ npm run start:prod
+    ```
+
+3. **Modo de desarrollo (sin reiniciar automáticamente)**:
+
+    ```bash
+    $ npm run start
+    ```
+
+---
+
+## **Base de Datos**
+
+Asegúrate de que tu base de datos esté configurada correctamente y de que hayas importado el archivo `db.sql` para crear las tablas necesarias.
+
+Para importar las tablas, usa el siguiente comando en tu base de datos MySQL:
 
 ## API Endpoints
 
@@ -73,3 +122,21 @@ $ npm run start:prod
 - **URL**: `/api/v1/auth/update-password`
 - **Método**: PATCH
 - **Query Parameter**: `token`
+
+## **Flujo de Autenticación**
+
+1. **Registro**: El usuario se registra proporcionando su correo y contraseña. El sistema genera un correo de verificación y lo envía.
+2. **Verificación de correo**: El usuario hace clic en el enlace del correo de verificación, lo que activa su cuenta.
+3. **Inicio de sesión**: El usuario puede iniciar sesión con su correo y contraseña. Si las credenciales son correctas, el sistema devuelve un JWT.
+4. **Restablecimiento de contraseña**: Si el usuario olvida su contraseña, puede solicitar un enlace de restablecimiento por correo.
+
+---
+
+## **Notas adicionales**
+
+- El sistema de autenticación está protegido con JWT para garantizar la seguridad en las rutas que requieren autenticación.
+- El sistema de verificación de correo electrónico utiliza un token único para cada usuario.
+- El módulo NodeMailer se utiliza para enviar los correos de verificación y restablecimiento de contraseña.
+
+---
+
