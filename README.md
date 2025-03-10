@@ -21,7 +21,11 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Este proyecto proporciona una estructura básica para crear un sistema de autenticación con NestJS, que incluye:
+- Registro de usuarios.
+- Inicio de sesión con JWT (JSON Web Tokens).
+- Protección de rutas mediante autenticación.
+- Estructura modular y fácil de entender para comenzar a construir una API segura.
 
 ## Project setup
 
