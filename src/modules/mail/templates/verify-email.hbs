@@ -1,0 +1,32 @@
+<div style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
+  <div
+    style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #740000; color: #ffffff; text-align: center; padding: 25px;">
+      <h1 style="margin: 0; font-size: 24px;">Confirma tu dirección de correo</h1>
+    </div>
+    <div style="padding: 25px; color: #333333;">
+      <p style="font-size: 16px; margin-bottom: 15px;">Hola,</p>
+      <p style="font-size: 16px; line-height: 1.5; margin-bottom: 20px;">
+        Para completar tu registro, verifica tu dirección de correo haciendo clic en el siguiente botón:
+      </p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="{{frontendUrl}}/auth/verify-email?token={{token}}" target="_blank" style="background-color: #740000; color: #ffffff; padding: 12px 24px; text-decoration: none; 
+          font-size: 16px; border-radius: 6px; display: inline-block; font-weight: bold;">
+          <span style="color: #ffffff; text-decoration: none;">Verificar cuenta</span>
+        </a>
+      </div>
+      <p style="font-size: 14px; color: #666666; text-align: center;">
+        Este enlace expirará en <strong>15 minutos</strong>. Si no solicitaste esta verificación, puedes ignorar este
+        correo.
+      </p>
+
+      <p style="font-size: 14px; color: #666666; text-align: center;">
+        Si el boton no funciona, copia y pega en el navegador el siguiente enlace: <strong>{{frontendUrl}}/auth/verify-email?token={{token}}</strong>.
+      </p>
+    </div>
+    <div style="background-color: #f8f9fa; text-align: center; padding: 15px; font-size: 12px; color: #777777;">
+      <p style="margin: 0;">Gracias por unirte a nosotros.</p>
+      <p style="margin: 0;">Equipo de Soporte</p>
+    </div>
+  </div>
+</div>
