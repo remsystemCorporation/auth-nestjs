@@ -2,8 +2,8 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 import { UserInfoEntity } from "./users-information.entity";
 import { RoleEntity } from "src/modules/roles/entities/role.entity";
 import { PasswordResetEntity } from "src/modules/auth/entities/password-reset.entity";
-import { EmailVerificationEntity } from "src/modules/auth/entities/email-verification.entity";
 import { RefreshTokenEntity } from "src/modules/auth/entities/refresh_token.entity";
+import { UserVerificationEntity } from "src/modules/auth/entities/user-verification.entity";
 
 @Entity({ name: "users" })
 export class UserEntity {
@@ -47,8 +47,8 @@ export class UserEntity {
   @OneToMany(() => PasswordResetEntity, (passwordReset) => passwordReset.userId)
   passwordResets: PasswordResetEntity[];
 
-  @OneToMany(() => EmailVerificationEntity, (emailVerification) => emailVerification.userId)
-  emailVerifications: EmailVerificationEntity[];
+  @OneToMany(() => UserVerificationEntity, (userVerification) => userVerification.userId)
+  userVerifications: UserVerificationEntity[];
 
   @OneToMany(() => RefreshTokenEntity, (refreshToken) => refreshToken.userId)
   refreshTokens: RefreshTokenEntity[];

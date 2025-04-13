@@ -1,11 +1,11 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+/* import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../users/entities/user.entity';
 import { In, MoreThan, Repository } from 'typeorm';
 import { RegisterUserDto } from './dto/register.dto';
 import * as bcrypt from 'bcrypt';
 import { JsonWebTokenError, JwtService, NotBeforeError, TokenExpiredError } from '@nestjs/jwt';
-import { EmailVerificationEntity } from './entities/email-verification.entity';
+
 import { PasswordResetEntity } from './entities/password-reset.entity';
 import { LoginUserDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
@@ -16,6 +16,7 @@ import { MailService } from '../mail/mail.service';
 import { RefreshTokenEntity } from './entities/refresh_token.entity';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { randomUUID } from 'crypto';
+import { UserVerificationEntity } from './entities/user-verification.entity';
 
 @Injectable()
 export class AuthService {
@@ -24,8 +25,8 @@ export class AuthService {
         private readonly userRepository: Repository<UserEntity>,
         @InjectRepository(UserInfoEntity)
         private readonly userInfoRepository: Repository<UserInfoEntity>,
-        @InjectRepository(EmailVerificationEntity)
-        private readonly emailVerificationRepository: Repository<EmailVerificationEntity>,
+        @InjectRepository(UserVerificationEntity)
+        private readonly userVerificationRepository: Repository<UserVerificationEntity>,
         @InjectRepository(PasswordResetEntity)
         private readonly passwordResetRepository: Repository<PasswordResetEntity>,
         @InjectRepository(RefreshTokenEntity)
@@ -35,7 +36,7 @@ export class AuthService {
         private readonly mailService: MailService,
     ) { }
 
-    async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string, refreshToken: string }> {
+     async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string, refreshToken: string }> {
         // 1. Validar el usuario
         const { email, password } = loginUserDto;
         const user = await this.validateUser(email);
@@ -117,12 +118,13 @@ export class AuthService {
             await manager.save(newUserInformation);
 
             // 5. Crear y guardar el token de verificación de email
-            const emailVerification = manager.create(EmailVerificationEntity, {
+            const userVerification = manager.create(UserVerificationEntity, {
                 userId: user,
                 verificationToken: token,
-                verificationExpires: new Date(Date.now() + 15 * 60 * 1000)
+                verificationExpires: new Date(Date.now() + 15 * 60 * 1000),
+                method: 'email',
             });
-            await manager.save(emailVerification);
+            await manager.save(userVerification);
 
             // 6. Enviar el email de verificación
             await this.mailService.sendVerificationEmail(email, token);
@@ -130,9 +132,9 @@ export class AuthService {
             // 7. Retornar un mensaje
             return "We have sent a verification email to confirm your email address.";
         });
-    }
+    } 
 
-    async verifyEmail(token: string): Promise<string> {
+     async verifyEmail(token: string): Promise<string> {
         // 1. Verificar si el token es válido
         const payload = this.validateEmailToken(token);
         const email = payload.email;
@@ -145,7 +147,7 @@ export class AuthService {
         if (user.isVerified) throw new ConflictException('User already verified');
 
         // 4. Verificar si el token de verificación es válido
-        const emailVerification = await this.emailVerificationRepository.findOne({
+        const userVerification = await this.userVerificationRepository.findOne({
             where: {
                 userId: { idUser: user.idUser },
                 verificationToken: token,
@@ -153,19 +155,22 @@ export class AuthService {
             }
         });
 
-        if (!emailVerification) throw new BadRequestException('Invalid token');
+        if (!userVerification) throw new BadRequestException('Invalid token');
 
         // 5. Actualizar el estado del usuario
+        userVerification.used = true;
+        userVerification.verifiedAt = new Date();
+        await this.userVerificationRepository.save(userVerification);
+
         user.isActive = true;
         user.isVerified = true;
         await this.userRepository.save(user);
 
         // 6.eliminar el token de verificación
-        await this.emailVerificationRepository.delete(emailVerification.idVerification);
-
+        //await this.userVerificationRepository.delete(userVerification.idVerification);
         return "Your email has been verified";
     }
-
+ 
     async resendVerificationEmail(resendMailDto: ResendMailDto): Promise<string> {
         return this.userRepository.manager.transaction(async (manager) => {
             // 1. Verificar si el email existe
@@ -177,7 +182,7 @@ export class AuthService {
             if (user.isVerified) throw new ConflictException('User already verified');
 
             // 3. Verificar si ya existe un token activo o si acaba de realizar una peticion, si no eliminarlo
-            const existingToken = await manager.findOne(EmailVerificationEntity, {
+            const existingToken = await manager.findOne(UserVerificationEntity, {
                 where: { userId: { idUser: user.idUser } },
                 order: { verificationExpires: 'DESC' }
             });
@@ -185,7 +190,7 @@ export class AuthService {
             if (existingToken && existingToken.verificationExpires > new Date()) {
                 throw new ConflictException('A verification email has already been sent. Please check your inbox.');
             }
-            await manager.delete(EmailVerificationEntity,
+            await manager.delete(UserVerificationEntity,
                 { userId: { idUser: user.idUser } }
             );
 
@@ -197,20 +202,19 @@ export class AuthService {
                     expiresIn: '15m'
                 }
             );
-            const emailVerification = manager.create(EmailVerificationEntity, {
+            const userVerification = manager.create(UserVerificationEntity, {
                 userId: { idUser: user.idUser },
                 verificationToken: token,
                 verificationExpires: new Date(Date.now() + 15 * 60 * 1000)
             });
-            await manager.save(emailVerification);
+            await manager.save(userVerification);
 
             // 5. Enviar el email de verificación
             await this.mailService.sendVerificationEmail(email, token);
 
             return "We have sent a verification email to confirm your email address.";
         })
-    }
-
+    } 
     async forgotPassword(forgotPasswordDto: ForgotPasswordDto): Promise<string> {
         return this.userRepository.manager.transaction(async (manager) => {
             //1. verificar si el email existe
@@ -226,22 +230,22 @@ export class AuthService {
             //listamos los registros de la tabla password_reset para ver el mas reciente
             let resetRecord = await manager.findOne(PasswordResetEntity, {
                 where: { userId: { idUser: user.idUser } },
-                order: { resetPasswordExpires: 'DESC' }
+                order: { resetExpires: 'DESC' }
             });
 
             // Si el usuario ya tiene un bloqueo por muchos intentos le damos el error
-            if (resetRecord?.resetPasswordBlockUntil && resetRecord.resetPasswordBlockUntil > new Date()) {
-                throw new ConflictException(`You have exceeded the reset attempts. Try again after ${resetRecord.resetPasswordBlockUntil}`);
+            if (resetRecord?.resetBlockUntil && resetRecord.resetBlockUntil > new Date()) {
+                throw new ConflictException(`You have exceeded the reset attempts. Try again after ${resetRecord.resetBlockUntil}`);
             }
 
             //Verificar si ya existe un token activo o si acaba de realizar una peticion
             //la peticion se puede hacer cada 15 minutos
-            if (resetRecord && resetRecord.resetPasswordExpires > new Date()) {
+            if (resetRecord && resetRecord.resetExpires > new Date()) {
                 throw new ConflictException('A password reset email has already been sent. Please check your inbox.');
             }
 
             // si no hay bloqueo se toma el valor resetCount y se incrementa
-            let resetCount = resetRecord ? resetRecord.passwordResetCount : 0;
+            let resetCount = resetRecord ? resetRecord.resetCount : 0;
             resetCount++;
 
             // Si el usuario ha excedido el límite de intentos, se bloquea por 24 horas
@@ -288,13 +292,13 @@ export class AuthService {
 
             //BUSCAMOS EL TOKEN EN LA TABLA PASSWORD_RESET
             const resetRecord = await manager.findOne(PasswordResetEntity, {
-                where: { userId: { idUser: user.idUser }, resetPasswordToken: token },
+                where: { userId: { idUser: user.idUser }, resetToken: token },
             });
             //validamos varios aspectos
             if (!resetRecord) throw new ConflictException('Invalid or expired reset token');
             if (resetRecord.isUsed) throw new ConflictException('This token has alredy been used');
             if (resetRecord.revoked) throw new ConflictException('This token has been revoked');
-            if (resetRecord.resetPasswordExpires < new Date()) throw new ConflictException('Token has expired');
+            if (resetRecord.resetExpires < new Date()) throw new ConflictException('Token has expired');
 
             //actualizar contraseña
             //DESCTRUCTURAMOS LOS DATOS DEL DTO
@@ -316,7 +320,7 @@ export class AuthService {
             return "Your password has been updated successfully";
         });
     }
-
+ 
     async refreshToken(refreshToken: string): Promise<{ accessToken: string, refreshToken: string }> {
         // 1. Verificar firma JWT
         const payload = this.validateRefreshToken(refreshToken); // Decodificamos y verificamos la firma del JWT
@@ -436,7 +440,7 @@ export class AuthService {
         const user = await this.userRepository.findOne({
             where: { email },
             relations: { role: true },
-            select: ['idUser', 'email', 'password', 'isActive', 'isVerified', 'deletedAt']
+            select: ['idUser', 'email', 'password', 'profilePicture' ,'isActive', 'isVerified', 'deletedAt']
         });
         if (!user) throw new NotFoundException('Email not found');
         if (!user.isActive) throw new ForbiddenException('Account suspended. Contact support.');
@@ -518,3 +522,4 @@ export class AuthService {
     }
 
 }
+ */

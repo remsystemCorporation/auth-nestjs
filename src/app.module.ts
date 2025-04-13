@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PasswordResetEntity } from './modules/auth/entities/password-reset.entity';
-import { EmailVerificationEntity } from './modules/auth/entities/email-verification.entity';
 import { UserEntity } from './modules/users/entities/user.entity';
 import { UserInfoEntity } from './modules/users/entities/users-information.entity';
 import { RoleEntity } from './modules/roles/entities/role.entity';
@@ -14,11 +11,13 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './modules/mail/mail.module';
 import { RefreshTokenEntity } from './modules/auth/entities/refresh_token.entity';
 import { FilesModule } from './modules/files/files.module';
+import { UserVerificationEntity } from './modules/auth/entities/user-verification.entity';
+import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
+    TypeOrmModule.forRoot({ 
       type: 'mysql',
       host: process.env.DATABASE_HOST,
       port: +process.env.DATABASE_PORT,
@@ -29,9 +28,9 @@ import { FilesModule } from './modules/files/files.module';
         UserEntity,
         RoleEntity,
         UserInfoEntity,
-        EmailVerificationEntity,
+        UserVerificationEntity,
         PasswordResetEntity,
-        RefreshTokenEntity
+        RefreshTokenEntity,
       ],
       synchronize: false,
       autoLoadEntities: true,
@@ -40,9 +39,10 @@ import { FilesModule } from './modules/files/files.module';
     RolesModule,
     AuthModule,
     MailModule,
-    FilesModule
+    FilesModule,
+    WhatsappModule
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

@@ -4,19 +4,6 @@
 
   <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
     <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 # **Sistema de Autenticación con NestJS**
 
@@ -28,137 +15,211 @@ Este proyecto proporciona una estructura para crear un sistema de autenticación
 - Módulo NodeMailer para verificación y restablecimiento de contraseñas.
 - Integración con una base de datos SQL (MySQL).
 - Envío de correos electrónicos de verificación y restablecimiento de contraseñas.
+- Envio de mensajes con WhatsappWebJs
+
+
+## 🆕 **Características adicionales implementadas**
+
+### 📱 Notificaciones por WhatsApp Web.js
+
+El sistema ahora incluye **notificaciones automáticas vía WhatsApp Web** al registrarse e iniciar sesión. Esto se logra mediante integración con la librería `whatsapp-web.js`.
+
+- Se envía un mensaje de bienvenida al registrarse
+- Se notifica al usuario al iniciar sesión exitosamente
+
+Esto se encuentra modularizado en el directorio `modules/whatsapp`.
+
+
+<img src="./docs/assets/whatsapp-web-js.jpg" alt="Vista previa del login" width="400"/>
 
 ---
 
-## **Iniciar el Proyecto**
+### 📸 Subida de imagen de perfil
 
-Antes de comenzar, asegúrate de tener instalado **Node.js**, **npm** y **MySQL**.
+Ahora los usuarios pueden subir su imagen de perfil. Este módulo:
 
-1. **Instalación de dependencias**:
+- Usa `@nestjs/platform-express` con `multer` para procesar el archivo
+- Sube la imagen a **Cloudinary**
+- Guarda la URL en la base de datos del usuario
 
-    ```bash
-    $ npm install
-    ```
+**Endpoint disponible:**
 
-2. **Configuración del entorno**:
+- **URL**: `/api/v1/files/upload-profile-picture`
+- **Método**: `POST`
+- **Requiere autenticación (JWT)**
 
-    Crea un archivo `.env` en la raíz del proyecto y agrega las siguientes variables de entorno:
+**Headers:**
+```http
+Authorization: Bearer <token>
+```
 
-    ```
-    DATABASE_HOST=localhost
-    DATABASE_PORT=3306
-    DATABASE_NAME=yourdatabasename
-    DATABASE_USERNAME=root
-    DATABASE_PASSWORD=yourpassword
-    JWT_SECRET=yoursecretkey
+**Form Data:**
+- `file`: imagen en formato `.jpg`, `.jpeg`, `.png` u otro compatible con Cloudinary
 
-    MAIL_HOST=smtp.gmail.com
-    MAIL_PORT=587
-    MAIL_USER=user
-    MAIL_PASSWORD=yourpassword
-    MAIL_FROM=your-email@example.com
-
-    FRONTEND_URL=https://yoursiteurl.com
-
-    JWT_SECRET=mainSecret
-    JWT_EMAIL_SECRET=emailSecretJWT
-    JWT_PASSWORD_SECRET=passwordSecretJWT
-    JWT_REFRESH_TOKEN_SECRET=refreshSecretJWT
-    ```
+**Respuesta:**
+```json
+{
+  "message": "Imagen subida correctamente",
+  "imageUrl": "https://res.cloudinary.com/..."
+}
+```
 
 ---
 
-## **Compilar y Correr el Proyecto**
+### 🗂️ Estructura modular extendida
 
-Para iniciar el proyecto, puedes usar los siguientes comandos:
+La arquitectura sigue el principio de separación de responsabilidades, ahora incluyendo:
 
-1. **Modo de desarrollo**:
+- `modules/whatsapp`: envío de mensajes
+- `modules/files`: subida de imágenes
+- `services/cloudinary.service.ts`: encapsula la lógica de Cloudinary
 
-    ```bash
-    $ npm run start:dev
-    ```
 
-2. **Modo de producción**:
+# 🛠️ Iniciar el Proyecto
 
-    ```bash
-    $ npm run start:prod
-    ```
+Antes de comenzar, asegúrate de tener instalados los siguientes requisitos:
 
-3. **Modo de desarrollo (sin reiniciar automáticamente)**:
-
-    ```bash
-    $ npm run start
-    ```
+- [Node.js](https://nodejs.org/)
+- npm
+- [MySQL](https://www.mysql.com/)
+- Una cuenta en [Cloudinary](https://cloudinary.com/) para la gestión de archivos (opcional pero recomendada).
 
 ---
 
-## **Base de Datos**
+## 📦 Instalación de Dependencias
 
-Asegúrate de que tu base de datos esté configurada correctamente y de que hayas importado el archivo `db.sql` para crear las tablas necesarias.
-
-Para importar las tablas, usa el siguiente comando en tu base de datos MySQL:
-
-## API Endpoints
-
-## Endpoint Main
-- **URL**: `/api/v1/`
-
-### 1. **Registrar un nuevo usuario**
-- **URL**: `/api/v1/auth/register`
-- **Método**: POST
-
-### 2. **Iniciar sesión**
-- **URL**: `/api/v1/auth/login`
-- **Método**: POST
-
-### 3. **Verificar email**
-- **URL**: `/api/v1/auth/verify-email`
-- **Método**: GET
-- **Query Parameter**: `token`
-
-### 4. **Reenviar email de verificación**
-- **URL**: `/api/v1/auth/resend-verification-email`
-- **Método**: POST
-
-### 5. **Olvidé mi contraseña**
-- **URL**: `/api/v1/auth/forgot-password`
-- **Método**: POST
-
-### 6. **Actualizar contraseña**
-- **URL**: `/api/v1/auth/reset-password`
-- **Método**: POST
-- **Query Parameter**: `token`
-
-### 7. **Refrescar token**
-- **URL**: `/api/v1/auth/refresh-token`
-- **Método**: POST
-- **Query Parameter**: `refreshToken`
-
-### 9. **Logout**
-- **URL**: `/api/v1/auth/logout`
-- **Método**: POST
-- **Authorization**: Bearer Token
-- **Query Parameter**: `refreshToken`
-
-## **Flujo de Autenticación**
-
-1. **Registro**: El usuario se registra proporcionando su correo y contraseña. El sistema genera un correo de verificación y lo envía.
-2. **Verificación de correo**: El usuario hace clic en el enlace del correo de verificación, lo que activa su cuenta.
-3. **Inicio de sesión**: El usuario puede iniciar sesión con su correo y contraseña. Si las credenciales son correctas, el sistema devuelve un JWT.
-4. **Restablecimiento de contraseña**: Si el usuario olvida su contraseña, puede solicitar un enlace de restablecimiento por correo.
-5. **Refrescar token**: Si el token expira se solicita un nuevo Token y de retorna un Token y un Refresh Token.
-6. **Logout**: si el usuario cierra sesion se invalidan los tokens.
+```bash
+npm install
+```
 
 ---
 
-## **Notas adicionales**
+## ⚙️ Configuración del Entorno
 
-- El sistema de autenticación está protegido con JWT para garantizar la seguridad en las rutas que requieren autenticación.
-- El sistema de verificación de correo electrónico utiliza un token único para cada usuario.
-- El módulo NodeMailer se utiliza para enviar los correos de verificación y restablecimiento de contraseña.
-- Los tokens JWT tienen tiempos de expiración que deben ser gestionados correctamente para asegurar la experiencia de usuario.
+Crea un archivo `.env` en la raíz del proyecto y agrega las siguientes variables:
 
-- Para la implementación de refresco de tokens y logout, asegúrate de implementar correctamente la lista negra de tokens para invalidar el refresh token.
+```env
+# Base de datos
+DATABASE_HOST=localhost
+DATABASE_PORT=3306
+DATABASE_NAME=yourdatabasename
+DATABASE_USERNAME=root
+DATABASE_PASSWORD=yourpassword
+
+# JWT Secrets
+JWT_SECRET=mainSecret
+JWT_EMAIL_SECRET=emailSecretJWT
+JWT_PASSWORD_SECRET=passwordSecretJWT
+JWT_REFRESH_TOKEN_SECRET=refreshSecretJWT
+
+# Configuración de correo
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=user
+MAIL_PASSWORD=yourpassword
+MAIL_FROM=your-email@example.com
+
+# Frontend
+FRONTEND_URL=https://yoursiteurl.com
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
 
 ---
+
+## 🚀 Ejecutar el Proyecto
+
+### 🔧 Modo desarrollo
+
+```bash
+npm run start:dev
+```
+
+### 🚀 Modo producción
+
+```bash
+npm run start:prod
+```
+
+### 🧪 Modo desarrollo sin reinicio automático
+
+```bash
+npm run start
+```
+
+---
+
+## 🗃️ Estructura del Proyecto
+
+```bash
+src/
+├── auth/
+│   ├── services/
+│   │   ├── login.service.ts
+│   │   ├── register.service.ts
+│   │   ├── verify-email.service.ts
+│   │   └── ...
+│   └── controllers/
+│       ├── auth.controller.ts
+│       └── ...
+└── ...
+```
+
+Separación por servicios individuales mejora la organización, pruebas y mantenimiento.
+
+---
+
+## 🧩 Base de Datos
+
+Asegúrate de haber importado el archivo `db.sql` para la creación de las tablas necesarias. Puedes hacerlo mediante tu gestor de base de datos MySQL favorito o por consola.
+
+---
+
+## 🔐 Endpoints de Autenticación
+
+Base URL: `/api/v1/auth`
+
+| Endpoint | Método | Descripción |
+|----------|--------|-------------|
+| `/register` | POST | Registrar nuevo usuario |
+| `/login` | POST | Iniciar sesión |
+| `/verify-email` | GET | Verificar correo electrónico |
+| `/resend-verification-email` | POST | Reenviar verificación |
+| `/forgot-password` | POST | Solicitar restablecimiento |
+| `/reset-password` | POST | Restablecer contraseña |
+| `/refresh-token` | POST | Renovar JWT |
+| `/logout` | POST | Cerrar sesión |
+
+---
+
+## 🔐 Flujo de Autenticación
+
+1. **Registro** ➝ Usuario se registra y recibe correo de verificación.
+2. **Verificación** ➝ Usuario activa su cuenta desde el correo.
+3. **Login** ➝ Recibe JWT y Refresh Token.
+4. **Restablecimiento** ➝ Puede solicitar y actualizar contraseña.
+5. **Refresh Token** ➝ Solicita nuevo JWT con refresh.
+6. **Logout** ➝ Se invalidan tokens (requiere implementación de lista negra).
+
+---
+
+## 🔎 Notas Técnicas
+
+- Sistema protegido por JWT.
+- Verificación por correo con tokens únicos.
+- Soporte de NodeMailer.
+- Tokens con expiración configurada.
+- Implementación futura de lista negra para tokens y manejo de sesión segura.
+
+## 🧾 Versión
+
+**Versión actual:** `v3.0.0`
+
+### 🆕 Cambios destacados:
+- Separación completa de servicios (`login.service.ts`, `register.service.ts`, etc).
+- Implementación de control de autenticación modularizada.
+- Soporte para Cloudinary y configuración avanzada por entorno.
+- Mejoras en el flujo de autenticación: refresh token, logout y verificación de email.
